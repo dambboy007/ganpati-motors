@@ -1,11 +1,14 @@
 /**
- * GANPATI MOTORS — admin.js
+ * GANPATI MOTORS - admin.js
  * Handles: Firebase Auth, CRUD operations, image upload
  */
 
 let allAdminCars = [];
 let selectedImages = []; // File objects for new upload
 let existingImages = []; // URLs for images already in Firestore (during edit)
+
+const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1/dw2klgkqa/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "ganpati_uploads";
 
 // Wait for Firebase
 let adminInitialized = false;
@@ -23,13 +26,13 @@ function initAdmin() {
 
   onAuthStateChanged(auth, user => {
     if (user) {
-      document.getElementById("loginScreen").style.display    = "none";
+      document.getElementById("loginScreen").style.display = "none";
       document.getElementById("adminDashboard").style.display = "block";
-      document.getElementById("adminEmail").textContent       = user.email;
+      document.getElementById("adminEmail").textContent = user.email;
       loadAllCars();
       setupImageUpload();
     } else {
-      document.getElementById("loginScreen").style.display    = "flex";
+      document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("adminDashboard").style.display = "none";
     }
   });
@@ -52,14 +55,14 @@ if (window._auth && window._fbModules) {
   initAdmin();
 }
 
-// ══════════════════════════════════
+// ==================================
 // AUTH
-// ══════════════════════════════════
+// ==================================
 async function handleLogin() {
-  const email    = document.getElementById("loginEmail").value.trim();
+  const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
-  const errEl    = document.getElementById("loginError");
-  const btn      = document.getElementById("loginBtn");
+  const errEl = document.getElementById("loginError");
+  const btn = document.getElementById("loginBtn");
 
   if (!email || !password) {
     errEl.textContent = "Please enter email and password.";
@@ -77,9 +80,9 @@ async function handleLogin() {
   } catch (err) {
     const messages = {
       "auth/invalid-credential": "Invalid email or password.",
-      "auth/user-not-found":     "No account found with this email.",
-      "auth/wrong-password":     "Incorrect password.",
-      "auth/too-many-requests":  "Too many attempts. Please try again later.",
+      "auth/user-not-found": "No account found with this email.",
+      "auth/wrong-password": "Incorrect password.",
+      "auth/too-many-requests": "Too many attempts. Please try again later.",
     };
     errEl.textContent = messages[err.code] || "Login failed. Please try again.";
     errEl.style.display = "block";
@@ -88,9 +91,9 @@ async function handleLogin() {
   }
 }
 
-// ══════════════════════════════════
+// ==================================
 // LOAD CARS
-// ══════════════════════════════════
+// ==================================
 async function loadAllCars() {
   try {
     const { collection, getDocs, query, orderBy } = window._fbModules;
@@ -110,7 +113,7 @@ async function loadAllCars() {
 }
 
 function updateStats() {
-  const active   = allAdminCars.filter(c => c.status !== "delisted");
+  const active = allAdminCars.filter(c => c.status !== "delisted");
   const delisted = allAdminCars.filter(c => c.status === "delisted");
   const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const thisWeek = allAdminCars.filter(c => {
@@ -118,10 +121,10 @@ function updateStats() {
     return date.getTime() > oneWeekAgo;
   });
 
-  document.getElementById("statTotal").textContent    = allAdminCars.length;
-  document.getElementById("statActive").textContent   = active.length;
+  document.getElementById("statTotal").textContent = allAdminCars.length;
+  document.getElementById("statActive").textContent = active.length;
   document.getElementById("statDelisted").textContent = delisted.length;
-  document.getElementById("statWeek").textContent     = thisWeek.length;
+  document.getElementById("statWeek").textContent = thisWeek.length;
 }
 
 function renderAdminInventory() {
@@ -129,7 +132,7 @@ function renderAdminInventory() {
   const active = allAdminCars.filter(c => c.status !== "delisted");
 
   if (active.length === 0) {
-    list.innerHTML = `<p style="color:var(--text2);padding:20px;">No active listings. <a href="#" onclick="switchTab('add')" style="color:var(--accent);">Add your first car →</a></p>`;
+    list.innerHTML = `<p style="color:var(--text2);padding:20px;">No active listings. <a href="#" onclick="switchTab('add')" style="color:var(--accent);">Add your first car -></a></p>`;
     return;
   }
 
@@ -137,11 +140,11 @@ function renderAdminInventory() {
     <div class="admin-car-item" id="admin-item-${car.id}">
       ${car.images?.length > 0
         ? `<img class="admin-car-thumb" src="${car.images[0]}" alt="${car.name}" />`
-        : `<div class="admin-car-thumb" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">🚗</div>`
+        : `<div class="admin-car-thumb" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">Car</div>`
       }
       <div class="admin-car-info">
         <h4>${car.name}</h4>
-        <p>₹${formatAdminPrice(car.price)} • ${car.year} • ${car.fuel} • ${formatAdminKm(car.km)} km • ${car.location}</p>
+        <p>Rs.${formatAdminPrice(car.price)} • ${car.year} • ${car.fuel} • ${formatAdminKm(car.km)} km • ${car.location}</p>
         <p style="margin-top:4px;font-size:0.75rem;color:var(--text3);">Added: ${formatDate(car.createdAt)}</p>
       </div>
       <div>
@@ -169,11 +172,11 @@ function renderDelistedCars() {
     <div class="admin-car-item" id="admin-item-del-${car.id}">
       ${car.images?.length > 0
         ? `<img class="admin-car-thumb" src="${car.images[0]}" alt="${car.name}" />`
-        : `<div class="admin-car-thumb" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">🚗</div>`
+        : `<div class="admin-car-thumb" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">Car</div>`
       }
       <div class="admin-car-info">
         <h4>${car.name}</h4>
-        <p>₹${formatAdminPrice(car.price)} • ${car.year} • ${car.fuel} • ${formatAdminKm(car.km)} km</p>
+        <p>Rs.${formatAdminPrice(car.price)} • ${car.year} • ${car.fuel} • ${formatAdminKm(car.km)} km</p>
       </div>
       <div>
         <span class="status-badge status-delisted">Delisted</span>
@@ -186,41 +189,47 @@ function renderDelistedCars() {
   `).join("");
 }
 
-// ══════════════════════════════════
+// ==================================
 // IMAGE UPLOAD SETUP
-// ══════════════════════════════════
+// ==================================
 function setupImageUpload() {
-  const input    = document.getElementById("imageInput");
-  const zone     = document.getElementById("uploadZone");
-  const previews = document.getElementById("imagePreviews");
+  const input = document.getElementById("imageInput");
+  const zone = document.getElementById("uploadZone");
 
   if (!input || !zone) return;
+  if (input.dataset.bound === "true") return;
 
-  input.addEventListener("change", (e) => handleImageFiles(e.target.files));
+  input.dataset.bound = "true";
 
-  zone.addEventListener("dragover", (e) => {
-    e.preventDefault(); zone.classList.add("dragover");
+  input.addEventListener("change", e => handleImageFiles(e.target.files));
+
+  zone.addEventListener("dragover", e => {
+    e.preventDefault();
+    zone.classList.add("dragover");
   });
   zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
-  zone.addEventListener("drop", (e) => {
-    e.preventDefault(); zone.classList.remove("dragover");
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("dragover");
     handleImageFiles(e.dataTransfer.files);
   });
 }
 
 function handleImageFiles(files) {
   const previews = document.getElementById("imagePreviews");
+
   Array.from(files).forEach(file => {
     if (!file.type.startsWith("image/")) return;
     if (selectedImages.length >= 10) {
       showToast("Maximum 10 images allowed", "error");
       return;
     }
+
+    const idx = selectedImages.length;
     selectedImages.push(file);
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const idx = selectedImages.length - 1;
+    reader.onload = e => {
       const wrap = document.createElement("div");
       wrap.className = "img-preview-wrap";
       wrap.id = `preview-new-${idx}`;
@@ -236,7 +245,6 @@ function handleImageFiles(files) {
 
 function removeNewImage(idx) {
   selectedImages.splice(idx, 1);
-  // Rebuild previews
   renderImagePreviews();
 }
 
@@ -249,7 +257,6 @@ function renderImagePreviews() {
   const previews = document.getElementById("imagePreviews");
   previews.innerHTML = "";
 
-  // Existing images
   existingImages.forEach((url, i) => {
     const wrap = document.createElement("div");
     wrap.className = "img-preview-wrap";
@@ -260,10 +267,9 @@ function renderImagePreviews() {
     previews.appendChild(wrap);
   });
 
-  // New images
   selectedImages.forEach((file, i) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       const wrap = document.createElement("div");
       wrap.className = "img-preview-wrap";
       wrap.innerHTML = `
@@ -276,40 +282,64 @@ function renderImagePreviews() {
   });
 }
 
-// ══════════════════════════════════
-// UPLOAD IMAGES TO FIREBASE STORAGE
-// ══════════════════════════════════
-async function uploadImages(carId) {
-  const { ref, uploadBytes, getDownloadURL } = window._fbModules;
-  const storage = window._storage;
-  const urls = [];
+// ==================================
+// UPLOAD IMAGES TO CLOUDINARY
+// ==================================
+async function uploadToCloudinary(file) {
+  const formData = new FormData();
 
-  for (let i = 0; i < selectedImages.length; i++) {
-    const file = selectedImages[i];
-    const fileName = `cars/${carId}/${Date.now()}_${i}_${file.name.replace(/\s/g, "_")}`;
-    const storageRef = ref(storage, fileName);
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
-    urls.push(url);
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  try {
+    const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+      method: "POST",
+      body: formData
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data.secure_url) {
+      const message = data?.error?.message || "Cloudinary upload failed.";
+      throw new Error(message);
+    }
+
+    return data.secure_url;
+  } catch (err) {
+    console.error("Cloudinary upload error:", err);
+    throw err;
   }
-
-  return [...existingImages, ...urls];
 }
 
-// ══════════════════════════════════
+async function uploadImages() {
+  if (selectedImages.length === 0) {
+    return [...existingImages];
+  }
+
+  try {
+    const uploadedUrls = await Promise.all(
+      selectedImages.map(file => uploadToCloudinary(file))
+    );
+
+    return [...existingImages, ...uploadedUrls];
+  } catch (err) {
+    console.error("Image upload failed:", err);
+    throw new Error("Image upload failed. Please try again.");
+  }
+}
+
+// ==================================
 // ADD / EDIT CAR
-// ══════════════════════════════════
+// ==================================
 async function submitCar() {
   const editId = document.getElementById("editCarId").value;
-  const btn    = document.getElementById("submitCarBtn");
-  const errEl  = document.getElementById("formError");
+  const btn = document.getElementById("submitCarBtn");
+  const errEl = document.getElementById("formError");
 
-  // Validation
-  const name  = document.getElementById("fName").value.trim();
+  const name = document.getElementById("fName").value.trim();
   const price = parseFloat(document.getElementById("fPrice").value);
-  const year  = parseInt(document.getElementById("fYear").value);
-  const fuel  = document.getElementById("fFuel").value;
-  const km    = parseInt(document.getElementById("fKm").value);
+  const year = parseInt(document.getElementById("fYear").value, 10);
+  const fuel = document.getElementById("fFuel").value;
+  const km = parseInt(document.getElementById("fKm").value, 10);
 
   if (!name || !price || !year || !fuel || !km) {
     errEl.textContent = "Please fill all required fields (marked with *).";
@@ -325,39 +355,35 @@ async function submitCar() {
     const { collection, addDoc, updateDoc, doc, serverTimestamp } = window._fbModules;
     const db = window._db;
 
-    // Upload images
     let imageUrls = [];
     if (selectedImages.length > 0 || existingImages.length > 0) {
-      const carId = editId || `car_${Date.now()}`;
-      imageUrls = await uploadImages(carId);
+      imageUrls = await uploadImages();
     } else if (editId) {
       imageUrls = existingImages;
     }
 
     const carData = {
-      name:         name,
-      price:        price,
-      year:         year,
-      fuel:         fuel,
-      km:           km,
+      name,
+      price,
+      year,
+      fuel,
+      km,
       transmission: document.getElementById("fTransmission").value,
-      color:        document.getElementById("fColor").value.trim(),
-      owners:       parseInt(document.getElementById("fOwners").value),
-      location:     document.getElementById("fLocation").value.trim() || "Kota",
-      ownerPhone:   document.getElementById("fPhone").value.trim(),
-      insurance:    document.getElementById("fInsurance").value.trim(),
+      color: document.getElementById("fColor").value.trim(),
+      owners: parseInt(document.getElementById("fOwners").value, 10),
+      location: document.getElementById("fLocation").value.trim() || "Kota",
+      ownerPhone: document.getElementById("fPhone").value.trim(),
+      insurance: document.getElementById("fInsurance").value.trim(),
       registration: document.getElementById("fReg").value.trim(),
-      description:  document.getElementById("fDesc").value.trim(),
-      images:       imageUrls,
-      status:       "active",
+      description: document.getElementById("fDesc").value.trim(),
+      images: imageUrls,
+      status: "active",
     };
 
     if (editId) {
-      // UPDATE
       await updateDoc(doc(db, "cars", editId), carData);
       showToast("✅ Car updated successfully!", "success");
     } else {
-      // ADD
       carData.createdAt = serverTimestamp();
       await addDoc(collection(db, "cars"), carData);
       showToast("✅ Car added successfully!", "success");
@@ -366,55 +392,52 @@ async function submitCar() {
     resetForm();
     await loadAllCars();
     switchTab("inventory");
-
   } catch (err) {
     console.error("Submit error:", err);
     errEl.textContent = "Error: " + err.message;
     errEl.style.display = "block";
+  } finally {
+    btn.textContent = editId ? "Save Changes" : "➕ Add Car to Inventory";
+    btn.disabled = false;
   }
-
-  btn.textContent = editId ? "Save Changes" : "➕ Add Car to Inventory";
-  btn.disabled = false;
 }
 
-// ══════════════════════════════════
+// ==================================
 // EDIT
-// ══════════════════════════════════
+// ==================================
 function editCar(carId) {
   const car = allAdminCars.find(c => c.id === carId);
   if (!car) return;
 
-  // Fill form
-  document.getElementById("editCarId").value      = carId;
-  document.getElementById("fName").value          = car.name || "";
-  document.getElementById("fPrice").value         = car.price || "";
-  document.getElementById("fYear").value          = car.year || "";
-  document.getElementById("fFuel").value          = car.fuel || "";
-  document.getElementById("fKm").value            = car.km || "";
-  document.getElementById("fTransmission").value  = car.transmission || "Manual";
-  document.getElementById("fColor").value         = car.color || "";
-  document.getElementById("fOwners").value        = car.owners || "1";
-  document.getElementById("fLocation").value      = car.location || "Kota";
-  document.getElementById("fPhone").value         = car.ownerPhone || "";
-  document.getElementById("fInsurance").value     = car.insurance || "";
-  document.getElementById("fReg").value           = car.registration || "";
-  document.getElementById("fDesc").value          = car.description || "";
+  document.getElementById("editCarId").value = carId;
+  document.getElementById("fName").value = car.name || "";
+  document.getElementById("fPrice").value = car.price || "";
+  document.getElementById("fYear").value = car.year || "";
+  document.getElementById("fFuel").value = car.fuel || "";
+  document.getElementById("fKm").value = car.km || "";
+  document.getElementById("fTransmission").value = car.transmission || "Manual";
+  document.getElementById("fColor").value = car.color || "";
+  document.getElementById("fOwners").value = car.owners || "1";
+  document.getElementById("fLocation").value = car.location || "Kota";
+  document.getElementById("fPhone").value = car.ownerPhone || "";
+  document.getElementById("fInsurance").value = car.insurance || "";
+  document.getElementById("fReg").value = car.registration || "";
+  document.getElementById("fDesc").value = car.description || "";
 
-  // Load existing images
-  existingImages  = car.images ? [...car.images] : [];
-  selectedImages  = [];
+  existingImages = car.images ? [...car.images] : [];
+  selectedImages = [];
   renderImagePreviews();
 
-  document.getElementById("formTitle").textContent    = "Edit Car";
+  document.getElementById("formTitle").textContent = "Edit Car";
   document.getElementById("submitCarBtn").textContent = "Save Changes";
 
   switchTab("add");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// ══════════════════════════════════
+// ==================================
 // DELIST / RELIST
-// ══════════════════════════════════
+// ==================================
 async function delistCar(carId) {
   if (!confirm("Delist this car? It will be hidden from the website but not deleted.")) return;
   try {
@@ -438,11 +461,11 @@ async function relistCar(carId) {
   }
 }
 
-// ══════════════════════════════════
+// ==================================
 // DELETE
-// ══════════════════════════════════
+// ==================================
 async function deleteCar(carId) {
-  if (!confirm("⚠️ Permanently delete this car? This cannot be undone.")) return;
+  if (!confirm("Permanently delete this car? This cannot be undone.")) return;
   try {
     const { doc, deleteDoc } = window._fbModules;
     await deleteDoc(doc(window._db, "cars", carId));
@@ -453,12 +476,12 @@ async function deleteCar(carId) {
   }
 }
 
-// ══════════════════════════════════
+// ==================================
 // RESET FORM
-// ══════════════════════════════════
+// ==================================
 function resetForm() {
   document.getElementById("editCarId").value = "";
-  ["fName","fPrice","fYear","fKm","fColor","fPhone","fInsurance","fReg","fDesc"].forEach(id => {
+  ["fName", "fPrice", "fYear", "fKm", "fColor", "fPhone", "fInsurance", "fReg", "fDesc"].forEach(id => {
     document.getElementById(id).value = "";
   });
   document.getElementById("fFuel").value = "";
@@ -474,9 +497,9 @@ function resetForm() {
   document.getElementById("imageInput").value = "";
 }
 
-// ══════════════════════════════════
+// ==================================
 // TABS
-// ══════════════════════════════════
+// ==================================
 function switchTab(tabName) {
   document.querySelectorAll(".admin-tab").forEach((btn, i) => {
     const names = ["inventory", "add", "delisted"];
@@ -486,13 +509,13 @@ function switchTab(tabName) {
   document.getElementById("tab-" + tabName)?.classList.add("active");
 }
 
-// ══════════════════════════════════
+// ==================================
 // UTILS
-// ══════════════════════════════════
+// ==================================
 function formatAdminPrice(p) {
-  if (!p) return "–";
-  if (p >= 100000) return "₹" + (p / 100000).toFixed(1) + "L";
-  return "₹" + p.toLocaleString("en-IN");
+  if (!p) return "-";
+  if (p >= 100000) return (p / 100000).toFixed(1) + "L";
+  return p.toLocaleString("en-IN");
 }
 
 function formatAdminKm(km) {
