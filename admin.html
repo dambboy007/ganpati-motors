@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Ganpati Motors</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="admin-body">
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="admin-login">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="logo-g">G</span>anpati <span class="logo-accent">Motors</span>
+    </div>
+    <h2>Admin Portal</h2>
+
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" class="form-input" placeholder="admin@ganpatimotors.in" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" />
+    </div>
+    <div id="loginError" style="color:var(--red);font-size:0.85rem;margin-bottom:12px;display:none;"></div>
+    <button class="login-btn" id="loginBtn">Sign In →</button>
+
+    <div style="margin-top:20px;">
+      <a href="index.html" style="color:var(--text3);font-size:0.82rem;">← Back to Website</a>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="adminDashboard" style="display:none;">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="admin-logo">
+      <span class="logo-g">G</span>anpati <span class="logo-accent">Motors</span>
+      <span style="font-family:var(--font-body);font-size:0.75rem;color:var(--text3);margin-left:10px;">Admin</span>
+    </div>
+    <div class="admin-user">
+      <span id="adminEmail"></span>
+      <button class="btn-logout" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="admin-main">
+
+    <!-- Stats Cards -->
+    <div class="admin-stats">
+      <div class="admin-stat-card">
+        <h3>Total Listed</h3>
+        <div class="big-num" id="statTotal">0</div>
+      </div>
+      <div class="admin-stat-card">
+        <h3>Active</h3>
+        <div class="big-num" id="statActive">0</div>
+      </div>
+      <div class="admin-stat-card">
+        <h3>Delisted</h3>
+        <div class="big-num" id="statDelisted">0</div>
+      </div>
+      <div class="admin-stat-card">
+        <h3>Added This Week</h3>
+        <div class="big-num" id="statWeek">0</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('inventory')">🚗 Inventory</button>
+      <button class="admin-tab" onclick="switchTab('add')">➕ Add Car</button>
+      <button class="admin-tab" onclick="switchTab('delisted')">📦 Delisted</button>
+    </div>
+
+    <!-- Tab: Inventory -->
+    <div class="admin-tab-content active" id="tab-inventory">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="font-family:var(--font-display);font-size:1.5rem;">Active Listings</h3>
+        <button class="btn-primary btn-sm" onclick="switchTab('add')">+ Add New Car</button>
+      </div>
+      <div class="admin-cars-list" id="adminCarsList">
+        <div class="loading-state"><div class="spinner"></div><p>Loading cars…</p></div>
+      </div>
+    </div>
+
+    <!-- Tab: Add/Edit Car -->
+    <div class="admin-tab-content" id="tab-add">
+      <h3 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:24px;" id="formTitle">Add New Car</h3>
+      <input type="hidden" id="editCarId" />
+
+      <div class="car-form-grid">
+
+        <!-- Images Upload -->
+        <div class="full-width">
+          <div class="form-group">
+            <label>Car Photos</label>
+            <div class="image-upload-zone" id="uploadZone" onclick="document.getElementById('imageInput').click()">
+              <span>📷</span>
+              <p>Click to upload or drag & drop images</p>
+              <p style="font-size:0.8rem;color:var(--text3);">JPG, PNG, WEBP • Max 5MB each • Up to 10 images</p>
+            </div>
+            <input type="file" id="imageInput" multiple accept="image/*" style="display:none" />
+            <div class="image-previews" id="imagePreviews"></div>
+          </div>
+        </div>
+
+        <!-- Car Details -->
+        <div class="form-group">
+          <label>Car Name *</label>
+          <input type="text" id="fName" class="form-input" placeholder="e.g. Maruti Swift VXI" />
+        </div>
+        <div class="form-group">
+          <label>Price (₹) *</label>
+          <input type="number" id="fPrice" class="form-input" placeholder="e.g. 450000" />
+        </div>
+        <div class="form-group">
+          <label>Model Year *</label>
+          <input type="number" id="fYear" class="form-input" placeholder="e.g. 2021" min="2000" max="2025" />
+        </div>
+        <div class="form-group">
+          <label>Fuel Type *</label>
+          <select id="fFuel" class="form-input">
+            <option value="">Select fuel type</option>
+            <option value="petrol">Petrol</option>
+            <option value="diesel">Diesel</option>
+            <option value="cng">CNG</option>
+            <option value="electric">Electric</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>KM Driven *</label>
+          <input type="number" id="fKm" class="form-input" placeholder="e.g. 35000" />
+        </div>
+        <div class="form-group">
+          <label>Transmission</label>
+          <select id="fTransmission" class="form-input">
+            <option value="Manual">Manual</option>
+            <option value="Automatic">Automatic</option>
+            <option value="CVT">CVT</option>
+            <option value="AMT">AMT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <input type="text" id="fColor" class="form-input" placeholder="e.g. Pearl White" />
+        </div>
+        <div class="form-group">
+          <label>Number of Owners</label>
+          <select id="fOwners" class="form-input">
+            <option value="1">1st Owner</option>
+            <option value="2">2nd Owner</option>
+            <option value="3">3rd Owner</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="fLocation" class="form-input" placeholder="e.g. Kota" value="Kota" />
+        </div>
+        <div class="form-group">
+          <label>Owner WhatsApp Number</label>
+          <input type="text" id="fPhone" class="form-input" placeholder="e.g. 919999999999" />
+        </div>
+        <div class="form-group">
+          <label>Insurance Details</label>
+          <input type="text" id="fInsurance" class="form-input" placeholder="e.g. Comprehensive, valid till Dec 2025" />
+        </div>
+        <div class="form-group">
+          <label>Registration Number</label>
+          <input type="text" id="fReg" class="form-input" placeholder="e.g. RJ-20-CA-1234" />
+        </div>
+
+        <!-- Description full width -->
+        <div class="form-group full-width">
+          <label>Description</label>
+          <textarea id="fDesc" class="form-input form-textarea" placeholder="Write details about the car's condition, features, history…"></textarea>
+        </div>
+
+        <!-- Submit buttons -->
+        <div class="full-width" style="display:flex;gap:12px;">
+          <button class="btn-primary" id="submitCarBtn" onclick="submitCar()">
+            ➕ Add Car to Inventory
+          </button>
+          <button class="btn-outline" onclick="resetForm()">Reset</button>
+        </div>
+        <div class="full-width" id="formError" style="color:var(--red);font-size:0.85rem;display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Delisted -->
+    <div class="admin-tab-content" id="tab-delisted">
+      <h3 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:16px;">Delisted Cars</h3>
+      <div class="admin-cars-list" id="delistedCarsList">
+        <p style="color:var(--text2);">No delisted cars.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc,
+    doc, serverTimestamp, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import {
+    getStorage, ref, uploadBytes, getDownloadURL, deleteObject
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+  // ── YOUR FIREBASE CONFIG (same as index.html) ──
+  const firebaseConfig = {
+    apiKey: "AIzaSyCnMZsu0C2vQK7majdJ3wvk76Og5uHYgWI",
+    authDomain: "ganpati-motors.firebaseapp.com",
+    projectId: "ganpati-motors",
+    storageBucket: "ganpati-motors.firebasestorage.app",
+    messagingSenderId: "756210235881",
+    appId: "1:756210235881:web:3259bb34420979e8bf3378"
+  };
+
+  const app     = initializeApp(firebaseConfig);
+  const auth    = getAuth(app);
+  const db      = getFirestore(app);
+  const storage = getStorage(app);
+
+  // Expose globally
+  window._auth    = auth;
+  window._db      = db;
+  window._storage = storage;
+  window._fbModules = {
+    signInWithEmailAndPassword, signOut, onAuthStateChanged,
+    collection, getDocs, addDoc, updateDoc, deleteDoc,
+    doc, serverTimestamp, query, orderBy,
+    ref, uploadBytes, getDownloadURL, deleteObject
+  };
+
+  window.dispatchEvent(new Event("firebase-ready"));
+</script>
+<script src="admin.js"></script>
+
+</body>
+</html>
