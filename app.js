@@ -6,8 +6,8 @@
 // ══════════════════════════════════
 // CONFIG
 // ══════════════════════════════════
-const WHATSAPP_NUMBER = "919999999999"; // Replace with real number (no + or spaces)
-const WHATSAPP_GROUP   = "https://chat.whatsapp.com/YOUR_GROUP_LINK"; // Replace with real group link
+const WHATSAPP_NUMBER = "918178965391"; // Replace with real number (no + or spaces)
+const WHATSAPP_GROUP   = "https://chat.whatsapp.com/BuQL3Yd1GM4KoMpsHbJLYF"; // Replace with real group link
 
 // ══════════════════════════════════
 // STATE
